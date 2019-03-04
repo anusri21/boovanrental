@@ -69,12 +69,17 @@ Route::group(['prefix' => 'admin'], function(){
     Route::post('updateamount','AdminController@updateamount');
     Route::get('deleteamount/{id}','HomeController@deleteamount');
 
+    Route::post('filterService','AdminController@filterService');
     
+	
+    Route::get('viewleads/{id}','HomeController@viewleads');
+    Route::post('addcomments','AdminController@addcomments');
 
 
-
-
-  
+    Route::get('servicetypelist','HomeController@serviceTypelist');
+    Route::post('addservicetype','AdminController@addServiceType');
+    Route::get('editservicetype/{id}','AdminController@editservicetype');
+    Route::get('deleteservicetype/{id}','HomeController@deleteservicetype');
 
 
 
