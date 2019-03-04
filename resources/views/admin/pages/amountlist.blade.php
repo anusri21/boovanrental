@@ -8,9 +8,17 @@
       <h3 class="panel-title">Amount List</h3>
       <ul class="panel-controls">
          <a href="#"><button type="button" class="btn btn-box-tool" data-toggle="modal" data-target="#myModal"><b>ADD</b><i class="fa fa-plus-circle"></i></button></a>
-         <!-- <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
-            <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
-            <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li> -->
+            @if(($totincome->income)!='')
+            <li style="margin-right:20px"><h5><b>Income :</b> {{$totincome->income}}</h5></li>
+            @else
+            <li style="margin-right:20px"><h5><b>Income :</b> 0</h5></li>
+            @endif
+            @if(($totincome->income)!='')
+            <li style="margin-right:20px"><h5><b>Expense :</b> {{$totexpense->expense}}</h5></li>
+            @else
+            <li style="margin-right:20px"><h5><b>Expense :</b> 0</h5></li>
+            @endif
+            <li style="margin-right:20px"><h5><b>Balance :</b> {{$balance}}</h5></li>
       </ul>
    </div>
    <div class="panel-body">
@@ -39,7 +47,7 @@
                   <td>{{ $val->invoice_vendor}}</td>
                   <td>{{$val->expense_date}}</td>
                   <td>{{$val->entry_amount}}</td>
-                  <td>{{$val->payment_type}}</td>
+                  <td>{{$val->cash_type}}</td>
                   <!-- <td><a href="{{ url('admin/clientview/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <span>View</span></a></td> -->
                   <!-- <td><a href="{{ url('admin/viewclient/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <i class="fa fa-eye"></i> </a></td> -->
                   <td><a href="#" data-id="{{$val->id}}" data-toggle="modal" class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small editamount" > <i class="fa fa-edit"></i> </a></td>
@@ -79,16 +87,12 @@
                         <div class="form-group">
                            <label class="col-md-4 col-xs-6 control-label">Invoice Vendor</label>
                            <div class="col-md-5 col-xs-6">
-                           <select class="form-control " name="invoice_vendor"  required="required">
-                                    <option value="">Select</option>
-                                    <option value="caltech">caltech</option>
-                                    <option value="calravi">caltechravi</option>
-                                    <option value="bhu">bhuvan</option>
-                                    <option value="bhusan">bhuvansankar</option>
-                                    <option value="bhumaha">bhuvanmaha</option>
-                                    <option value="bhuaru">bhuvanarun</option>
-                                    <option value="bhuven">bhuvanvenkat</option>
-                                </select>
+                           <select id="select" class="form-control"  name="invoice_vendor"  required="required">
+                                 <option value="">Select</option>
+                                 @foreach($vendor as $val)
+                                 <option value="{{$val->vendor_name}}">{{$val->vendor_name}}</option>
+                                 @endforeach
+                              </select>
                            </div>
                           
                         </div>
@@ -213,16 +217,12 @@
                         <div class="form-group">
                            <label class="col-md-4 col-xs-6 control-label">Invoice Vendor</label>
                            <div class="col-md-5 col-xs-6">
-                           <select class="form-control " name="invoice_vendor" id="iv" required="required">
-                                    <option value="">Select</option>
-                                    <option value="caltech">caltech</option>
-                                    <option value="calravi">caltechravi</option>
-                                    <option value="bhu">bhuvan</option>
-                                    <option value="bhusan">bhuvansankar</option>
-                                    <option value="bhumaha">bhuvanmaha</option>
-                                    <option value="bhuaru">bhuvanarun</option>
-                                    <option value="bhuven">bhuvanvenkat</option>
-                                </select>
+                                <select id="select" class="form-control"  name="invoice_vendor"  required="required">
+                                 <option value="">Select</option>
+                                 @foreach($vendor as $val)
+                                 <option value="{{$val->vendor_name}}">{{$val->vendor_name}}</option>
+                                 @endforeach
+                              </select>
                            </div>
                           
                         </div>

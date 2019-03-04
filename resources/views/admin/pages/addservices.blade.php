@@ -1,4 +1,4 @@
-@if(Auth::user()->user_type =='admin')  
+ 
 
 @extends('admin.default')
 @section('content')
@@ -31,7 +31,17 @@
                         </div>
                      </div>
                      
-                     
+                     <div class="form-group">
+                        <label class="col-md-3 col-xs-12 control-label">ServiceType</label>
+                        <div class="col-md-9 col-xs-12">                                            
+                              <select class="form-control select" name="service_type">
+                              <option value="select">Select</option>
+                              @foreach ( $type as $val)
+                              <option value="{{$val->id}}">{{$val->service_type}}</option>
+                              @endforeach
+                              </select>                       
+                         </div>
+                     </div>
                      <div class="form-group">
                         <label class="col-md-3 col-xs-12 control-label">ServiceDesc</label>
                         <div class="col-md-9 col-xs-12">                                            
@@ -102,4 +112,3 @@ function CheckName(val){
 </script>  -->
 
 @stop
-@endif

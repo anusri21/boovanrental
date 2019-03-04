@@ -2,7 +2,7 @@
  @if(Auth::user()->user_type =='admin')  
 <ul class="x-navigation">
    <li class="xn-logo">
-      <a href="index-2.html">Admin</a>
+      <a href="#">Admin</a>
       <a href="#" class="x-navigation-control"></a>
    </li>
    <!-- <li class="xn-profile">
@@ -72,6 +72,10 @@
          <li><a href="{{url('admin/servicelist')}}"><span class="fa fa-user"></span>Service List</a></li>
       </ul>
    </li>
+   <li >
+      <a href="{{url('admin/servicetypelist')}}"><span class="fa fa-cogs"></span> <span class="xn-text">Service Type</span></a>
+     
+   </li>
 </ul>
 @else
 
@@ -99,9 +103,9 @@
       </div>                                                                        
       </li> -->
    <li class="xn-title"></li>
-   <li class="active">
+   <!-- <li class="active">
       <a href="{{url('home')}}"><span class="fa fa-desktop"></span> <span class="xn-text">Dashboard</span></a>                        
-   </li>
+   </li> -->
    
    <li class="xn-openable">
       <a href="#"><span class="fa fa-cogs"></span> <span class="xn-text">Service Call</span></a>

@@ -11,9 +11,10 @@
    <div class="panel-heading">
       <h3 class="panel-title">Client List</h3>
       <ul class="panel-controls">
+      <!-- <h4><b>Total Income : {{$totincome->totrent}}</b></h4> -->
          <button type="button" class="btn btn-box-tool export" ><b>Export</b><i class="fa fa-upload"></i></button>
-         <!-- <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
-            <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+         <li style="margin-right:20px"><h4><b>Total Income : {{$totincome->totrent}}</b></h4></li>
+            <!-- <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
             <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li> -->
       </ul>
    </div>

@@ -7,7 +7,7 @@
 <!-- START DEFAULT DATATABLE -->
 <div class="panel panel-default">
    <div class="panel-heading">
-      <h3 class="panel-title">UserLeads List</h3>
+      <h3 class="panel-title">New Leads List</h3>
       <ul class="panel-controls">
          <a href="#"><button type="button" class="btn btn-box-tool" data-toggle="modal" data-target="#myModal"><b>ADD</b><i class="fa fa-plus-circle"></i></button></a>
          <!-- <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
@@ -25,6 +25,7 @@
                   <th>Requirements</th>
                   <th>ContactNumber</th>
                   <th>ContactEmail</th>
+                  <th>View</th>
                   <th>Edit</th>
                   <th>Delete</th>
                </tr>
@@ -41,7 +42,7 @@
                   <td>{{$val->contact_number}}</td>
                   <td>{{$val->contact_email}}</td>
                   <!-- <td><a href="{{ url('admin/clientview/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <span>View</span></a></td> -->
-                  <!-- <td><a href="{{ url('admin/viewclient/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <i class="fa fa-eye"></i> </a></td> -->
+                  <td><a href="{{ url('admin/viewleads/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <i class="fa fa-eye"></i> </a></td>
                   <td><a href="#" data-id="{{$val->id}}" data-toggle="modal" class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small editlead" > <i class="fa fa-edit"></i> </a></td>
                   <td><button type="button" class="btn btn-gradient-forest waves-effect waves-light m-1 delete" data-id="{{ $val->id }}" > <i class="fa fa fa-trash-o"></i>  </button></td>
                </tr>
@@ -120,7 +121,7 @@
          <div class="modal-content">
             <div class="modal-header">
                <button type="button" class="close" data-dismiss="modal">&times;</button>
-               <h4 class="modal-title">Edit UserLeads</h4>
+               <h4 class="modal-title">Edit Leads</h4>
             </div>
             <div class="modal-body">
                <div class="row">

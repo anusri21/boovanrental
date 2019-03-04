@@ -1,43 +1,66 @@
 @extends('admin.default')
 @section('content')
-<?php
-//    $totalpay =array();
-//    foreach($systmrs as $val)
-//    {
-//     Print_r($val->total_amount);die;
-//        $tot=$val->total_amount;
-//        $totalpay[]=$tot;
-//    }
-//        $totpayment=array_sum($totalpay);
-//    Print_r($totpayment);die;
-   ?>
+<style>
+[type="date"] {
+  background:#fff url(https://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/calendar_2.png)  97% 50% no-repeat ;
+}
+[type="date"]::-webkit-inner-spin-button {
+  display: none;
+}
+[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
+
+label {
+  display: block;
+}
+input,select {
+  border: 1px solid #c4c4c4;
+  border-radius: 5px;
+  background-color: #fff;
+  padding: 3px 5px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  width: 150px;
+}
+</style>
 <div class="col-md-12">
 <!-- START DEFAULT DATATABLE -->
 <div class="panel panel-default">
    <div class="panel-heading">
       <h3 class="panel-title">Service List</h3>
-      <div style="padding:10px">
-      From: <input type="text" id="txtFromDate" />
-      To: <input type="text" id="txtToDate" />
-      </div>
       <ul class="panel-controls">
-         <a href="{{url('admin/addService')}}"><button type="button" class="btn btn-box-tool" ><b>ADD</b><i class="fa fa-plus-circle"></i></button></a>
-         <!-- <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
-            <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
-            <li><a href="#" class="panel-remove"><span class="fa fa-times"></span></a></li> -->
+            <form action="#" method="post" id="filterform">
+            {{csrf_field() }}
+               From: <input type="date" name="from_date" value="{{ @$_GET['sdate']}}" id="from_date" >
+               To: <input type="date" name="end_date" value="{{ @$_GET['ldate']}}"  id="end_date" />
+               Assign:<select name="assign" id="assign" >
+                        <option value="select">Select</option>                        
+                        @foreach ( $assrole as $val)
+                        <option value="{{$val->id}}" <?php echo (@$_GET['assign'] == $val->id ) ? ' selected="selected"' : '';?>>{{$val->name}}</option>
+                        @endforeach
+                     </select>
+               
+               <button type="button"  class="btn btn-info filter" style="margin-right:90px;margin-left:40px">Search</button>
+               <a href="{{url('admin/servicelist')}}" class="btn btn-primary filter" style="margin-right:90px;">Reset</a>
+          
+            <a href="{{url('admin/addService')}}"><button type="button" class="btn btn-box-tool" ><b>ADD</b><i class="fa fa-plus-circle"></i></button></a>
       </ul>
+      </form>
    </div>
    <div class="panel-body">
+      <div id="onload">
       <div class="table-responsive">
          <table class="table datatable">
             <thead>
                <tr>
                   <th>S.No</th>
                   <th>Client Name</th>
-                  <th>Service Description</th>
+                  <th>Service Type</th>
                   <th>Reported Date</th>
                   <th>Call Attend</th>
                   <th>Assign To</th>
+                  <th>Service Status</th>
                   <th>View</th>
                   <th>Delete</th>
                </tr>
@@ -50,10 +73,12 @@
                <tr>
                   <td>{{++$i}}</td>
                   <td>{{ $val->client_name}}</td>
-                  <td>{{ $val->service_desc}}</td>
+                  <td>{{ $val->service_type}}</td>
                   <td>{{ $val->reported_date}}</td>
                   <td>{{ $val->callattn}}</td>
                   <td>{{ $val->assignto}}</td>
+                
+                  <td>{{ $val->service_status}}</td>
                   <!-- <td><a href="{{ url('admin/clientview/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <span>View</span></a></td> -->
                   <td><a href="{{ url('admin/viewservice/'.$val->id) }}"  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" > <i class="fa fa-eye"></i> </a></td>
                   <!-- <td><a href="#" data-id="{{$val->id}}" data-toggle="modal" class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small editservice" > <i class="fa fa-edit"></i> </a></td> -->
@@ -63,6 +88,10 @@
             </tbody>
          </table>
       </div>
+      </div>
+
+      
+
    </div>
 </div>
 
@@ -130,9 +159,9 @@
                         <div class="col-md-9 col-xs-12">
                            <select class="form-control " name="assigned_to" id="assn">
                            <option value="select">Select</option>
-                           @foreach ( $user as $val)
-                           <option value="{{$val->id}}">{{$val->firstname}}</option>
-                           @endforeach
+                        @foreach ( $assrole as $val)
+                        <option value="{{$val->id}}">{{$val->name}}</option>
+                        @endforeach
                            </select>
                         </div>
                      </div>
@@ -154,6 +183,14 @@
 
 
 <!-- END DEFAULT DATATABLE -->
+<script>
+$( document ).ready(function() {
+  alert('inside');
+   $('#filterres').hide();
+   $('#onload').show();
+});
+</script>
+
 <script>
    $(document).on('click','.delete',function(){
      //alert('alert');
@@ -192,6 +229,58 @@
                   $('#myModal1').modal('show');
                  }
              });
+    });
+</script>
+
+<script>
+         $(function() {
+            $( "#datepicker-13" ).datepicker();
+            $( "#datepicker-13" ).datepicker("show");
+         });
+      </script>
+
+
+<!-- <script>
+   $(document).on('click','.filter',function(){
+    
+    var formData= $('#filterform').serializeArray();
+    //console.log($formdata);
+      var url = "{{url('admin/filterService')}}";
+              $.ajax({
+                 type: 'POST',
+                 url: url,
+                 data: formData,
+                 success:function(data){
+                  console.log(data);
+                  var len=data.filter.length;
+                //alert(len);
+                  $('#onload').hide();
+                  $('filterres').show();
+                var s= "";
+                       for(i=0; i<len; i++){
+   
+                         //url = "{{ asset('public/pdf') }}"+"/"+data.pdf[i].pdf_path;
+                         viewurl ="{{ url('admin/viewservice') }}"+"/"+data.filter[i].id;
+                         console.log()
+                           s+='<tr><th >'+ (parseInt(i)+1) +'</th><td>'+data.filter[i].client_name+'</td><td>'+data.filter[i].service_desc+'</td><td>'+data.filter[i].reported_date+'</td><td>'+data.filter[i].call_attend+'</td><td>'+data.filter[i].assignto+'</td>\
+                           <td><a href='+viewurl+'  class="btn btn-gradient-ibiza waves-effect waves-light m-1 .btn-small" ><i class="fa fa-eye"></i></a></td><td><button type="button" class="btn btn-gradient-forest waves-effect waves-light m-1 delete" data-id='+data.filter[i].id+' ><i class="fa fa fa-trash-o"></i></button></td></tr>';
+                       }
+                       document.getElementById("frec").innerHTML=s;
+                       //datatable();
+              }
+             });
+    });
+</script> -->
+
+<script>
+   $(document).on('click','.filter',function(){
+      sdate = $('#from_date').val();
+      ldate = $('#end_date').val();
+      assign = $('#assign option:selected').val(); 
+      var url = "{{ url('admin/servicelist') }}"+"/?sdate="+sdate+'&ldate='+ldate+'&assign='+assign;
+      console.log(url);
+      window.location.href = url;
+    
     });
 </script>
 
