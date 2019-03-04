@@ -43,13 +43,13 @@ class Admin extends Model
         $query = DB::table('crs_service');
         if ($input['id']) {
     
-           // $input['updated_at'] = Carbon::now()->toDateTimeString();
+           $input['updated_at'] = Carbon::now()->toDateTimeString();
             $result = $query->where([['id', $input['id']]])->update($input);
             return $input['id'];
             
         } else {
         
-           // $input['created_at'] = Carbon::now()->toDateTimeString();
+           $input['created_at'] = Carbon::now()->toDateTimeString();
             $result = $query->insertGetId($input);
             return $result;
         }
@@ -133,5 +133,35 @@ class Admin extends Model
             return $result;
         }
 
+    }
+    public function addcomments($input) {        
+        $query = DB::table('crs_new_leads_comments');
+        if ($input['id']) {
+    
+           $input['updated_at'] = Carbon::now()->toDateTimeString();
+            $result = $query->where([['id', $input['id']]])->update($input);
+            return $input['id'];
+            
+        } else {
+        
+           $input['created_at'] = Carbon::now()->toDateTimeString();
+            $result = $query->insertGetId($input);
+            return $result;
+        }
+    }
+    public function addServicetype($input){
+        $query= DB::table('crs_service_type');
+        if ($input['id']) {
+    
+            $input['updated_at'] = Carbon::now()->toDateTimeString();
+             $result = $query->where([['id', $input['id']]])->update($input);
+             return $input['id'];
+             
+         } else {
+         
+            $input['created_at'] = Carbon::now()->toDateTimeString();
+             $result = $query->insertGetId($input);
+             return $result;
+         }
     }
 }

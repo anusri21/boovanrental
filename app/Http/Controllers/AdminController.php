@@ -213,6 +213,7 @@ class AdminController extends Controller
                 'reported_date' => isset($data['reported_date']) ? $data['reported_date'] : '',
                 'call_attend' => isset($data['call_attend']) ? $data['call_attend'] : '',
                 'assigned_to' => isset($data['assigned_to']) ? $data['assigned_to'] : '',
+                'service_type' => isset($data['service_type']) ? $data['service_type'] : '',
                
             ];
             $rules = array(
@@ -240,6 +241,7 @@ class AdminController extends Controller
                     'reported_date' => $input['reported_date'],
                     'call_attend' => $input['call_attend'],
                     'assigned_to' => $input['assigned_to'],
+                    'service_type' => $input['service_type'],
                     'status'=>1
                 );
 
@@ -821,5 +823,164 @@ class AdminController extends Controller
                     ], 400);
         }
 
+    }
+
+    public function filterService(Request $request)
+    {
+        $data=$request->all();
+        //dd($data['from_date']);
+        $startDate=$data['from_date'];
+        $endDate=$data['end_date'];
+        $assign=$data['assign'];
+        $filter = DB::table('crs_service')
+                ->select('crs_service.*','a1.firstname as callattn','a2.name as assignto','crs_client.client_name','crs_client.id as cid')
+                ->join('crs_admin_users as a1','a1.id','=','crs_service.call_attend')
+                ->join('users as a2','a2.id','=','crs_service.assigned_to')
+                ->join('crs_client','crs_client.id','=','crs_service.client_name')
+                ->where('crs_service.status',1)
+                ->orderby('crs_service.id','DESC')
+                ->where('a2.id',$assign)
+                ->whereBetween('reported_date', [$startDate, $endDate])
+                ->get();
+                
+        if($filter){
+            return Response::json([
+                'status' => 1,
+                'filter' => $filter,
+                    ], 200);
+        }else{
+            return Response::json([
+                'status' => 0,
+                'message' => 'Not Selected'
+                    ], 400);
+        }
+    }
+
+
+    public function addcomments(Request $request)
+    {
+        $data=$request->all();
+        //dd($data);
+        if ($data != null) {
+
+            $input = [
+                'id' => isset($data['id']) ? $data['id'] : false,
+                'user_id' => isset($data['user_id']) ? $data['user_id'] : '',
+                'comments' => isset($data['comments']) ? $data['comments'] : '',
+                'leads_id' => isset($data['leads_id']) ? $data['leads_id'] : '',
+                'leads_status' => isset($data['leads_status']) ? $data['leads_status'] : '',
+            ];
+
+            $rules = array(
+                'comments' => 'required',
+               
+               
+            );
+            $checkValid = Validator::make($input, $rules);
+            if ($checkValid->fails()) {
+                $data = Session::flash('error', 'Please Provide All Datas!');
+                return Redirect::back()
+                ->withInput()
+                ->withErrors($data);
+            } else { 
+               
+                $commentInput = array(
+                    'id' => $input['id'],
+                    'user_id' => $input['user_id'],
+                    'leads_id' => $input['leads_id'],
+                    'comments' => $input['comments'],
+                    'leads_status'=>$input['leads_status'],
+                   
+                );
+                //dd($clientInput);
+                $comment = $this->admin->addComments($commentInput);
+
+                $s_status=array(
+                    'leads_status'=>$input['leads_status'],
+                    //'updated_at'=>Carbon::now()->toDateTimeString(),
+                );
+                $updatestatus=DB::table('crs_new_leads')->where('id',$input['leads_id'])->update($s_status);
+               if ($comment) {
+                   
+                    $data = Session::flash('message', 'Successfully Added!');
+                    return Redirect::back()->with(['data', $data], ['message', $data]);
+
+                } else {
+                    $data = Session::flash('warning', 'Something Error Occured!');
+                    return Redirect::back()->with(['data', $data], ['warning', $data]);
+                }
+            }
+        } else {
+            return Response::json([
+                        'status' => 0,
+                        'message' => "No data"
+            ]);
+        }
+       
+    }
+    public function addServiceType(Request $request){
+        $data = $request->all();
+        //dd($data);
+        if ($data != null) {
+
+            $input = [
+                'id' => isset($data['id']) ? $data['id'] : false,
+                'service_type' => isset($data['service_type']) ? $data['service_type'] : '',
+                
+    
+            ];
+
+            $rules = array(
+                'service_type' => 'required',
+                
+               
+            );
+            $checkValid = Validator::make($input, $rules);
+            if ($checkValid->fails()) {
+                $data = Session::flash('error', 'Please Provide All Datas!');
+                return Redirect::back()
+                ->withInput()
+                ->withErrors($data);
+            } else { 
+               
+                $userInput = array(
+                    'id' => $input['id'],
+                    'service_type' => $input['service_type'],
+                    
+                );
+                //dd($userInput);
+                $system = $this->admin->addServicetype($userInput);
+               if ($system) {
+                   
+                    $data = Session::flash('message', 'Successfully Updated!');
+                    return Redirect::back()->with(['data', $data], ['message', $data]);
+
+                } else {
+                    $data = Session::flash('warning', 'Something Error Occured!');
+                    return Redirect::back()->with(['data', $data], ['warning', $data]);
+                }
+            }
+        } else {
+            return Response::json([
+                        'status' => 0,
+                        'message' => "No data"
+            ]);
+        }
+    }
+    public function editservicetype($id)
+    {
+        $system = DB::table('crs_service_type')->where('id',$id)->first();
+        //dd($system);
+        if($system){
+            return Response::json([
+                'status' => 1,
+                'system' => $system,
+                    ], 200);
+        }else{
+            return Response::json([
+                'status' => 0,
+                'message' => 'Not Selected'
+                    ], 400);
+        }
     }
 }

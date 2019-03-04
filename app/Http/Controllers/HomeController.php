@@ -27,7 +27,19 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('admin.pages.dashboard');
+        if(Auth::user()->user_type =='admin'){
+        $totincome = DB::table("crs_system_details")
+                    ->select(DB::raw("SUM(total_amount) as totrent"))
+                    ->where('trash_status',0)
+                    ->where('rental_status','yes')
+                    ->first();
+        $clientcount =DB::table('crs_client')->where('trash_status',0)->where('active','yes')->count();
+        $leadscount=DB::table('crs_new_leads')->where('status', 1)->count();
+        //dd($totincome);
+        return view('admin.pages.dashboard')->with('clientcount',$clientcount)->with('leadscount',$leadscount)->with('totincome',$totincome);
+        }else{
+            return redirect('admin/servicelist');
+        }
     }
     public function login()
     {
@@ -49,16 +61,21 @@ class HomeController extends Controller
                     ->groupBy(DB::raw("client_id"))
                     ->where('client_id',$cid)
                     ->first();
-                    //dd($data->totrent);
+            //dd($data->totrent);
                     if($data){
                             $amount[$cid]=$data->totrent;
                     }else{
                         $amount[$cid]=0;
                     }
-             
+                    //dd($amount);
         }
-    
-        return view('admin.pages.clientlist')->with('clientrs',$clientrs)->with('amount',$amount);
+        $totincome = DB::table("crs_system_details")
+                    ->select(DB::raw("SUM(total_amount) as totrent"))
+                    ->where('trash_status',0)
+                    ->where('rental_status','yes')
+                    ->first();
+        //($totincome);
+        return view('admin.pages.clientlist')->with('clientrs',$clientrs)->with('amount',$amount)->with('totincome',$totincome);
         }
     }
     public function clientview($id)
@@ -153,40 +170,53 @@ class HomeController extends Controller
         $service = DB::table('crs_service')->get();
         $user = DB::table('crs_admin_users')->get();
         $name = DB::table('crs_client')->get();
-        $assrole=DB::table('users')->where('user_type','technician')->get();
-        return view('admin.pages.addservices')->with('role',$service)->with('user',$user)->with('name',$name)->with('assrole',$assrole);
+        $type  = DB::table('crs_service_type')->get();
+        $assrole=DB::table('users')->where('user_type','technician')->where('status',1)->get();
+        return view('admin.pages.addservices')->with('role',$service)->with('user',$user)->with('name',$name)->with('assrole',$assrole)->with('type',$type);
     }
     public function servicelist()
     {
+        $startDate = @$_GET['sdate'];
+        $endDate = @$_GET['ldate'];
+        $assign = @$_GET['assign'];
+        
+        $currentMonth = date('m');
+        //dd($currentMonth);
         $user = DB::table('crs_admin_users')->get();
         $name = DB::table('crs_client')->get();
-
-        // $service=DB::table('crs_service')
-        //             ->select('crs_service.*','a1.firstname as callattn','a2.firstname as assignto','crs_client.client_name','crs_client.id as cid')
-        //             ->join('crs_admin_users as a1','a1.id','=','crs_service.call_attend')
-        //             ->join('crs_admin_users as a2','a2.id','=','crs_service.assigned_to')
-        //             ->join('crs_client','crs_client.id','=','crs_service.client_name')
-        //             ->where('crs_service.status',1)
-        //             ->get();
-        $service=DB::table('crs_service')
-                ->select('crs_service.*','a1.firstname as callattn','a2.name as assignto','crs_client.client_name','crs_client.id as cid')
+        $assrole=DB::table('users')->where('user_type','technician')->where('status',1)->get();
+        
+        if($startDate&&$endDate&&$assign)
+        {
+            $service = DB::table('crs_service')
+                ->select('crs_service.*','a1.firstname as callattn','a2.name as assignto','crs_client.client_name','crs_client.id as cid','crs_service_type.service_type')
                 ->join('crs_admin_users as a1','a1.id','=','crs_service.call_attend')
                 ->join('users as a2','a2.id','=','crs_service.assigned_to')
                 ->join('crs_client','crs_client.id','=','crs_service.client_name')
+                ->leftJoin('crs_service_type','crs_service_type.id','=','crs_service.service_type')
                 ->where('crs_service.status',1)
+                ->orderby('crs_service.id','DESC')
+                ->where('a2.id',$assign)
+                ->whereBetween('reported_date', [$startDate, $endDate])
                 ->get();
-        // $client=array();
-        // foreach ($service as $key=>$value)
-        // {
-        //     $client[$key] = $value;
-        //     $client[$key]->clientname = DB::table('crs_service_lines')
-        //                                 ->select('crs_service_lines.*','crs_client.client_name')
-        //                                 ->join('crs_client','crs_client.id','=','crs_service_lines.client_id')
-        //                                 ->where('crs_service_lines.header_id','=', $value->id)
-        //                                 ->get();
-        // }   
-        //dd($service);
-        return view('admin.pages.servicelist')->with('service',$service)->with('user',$user)->with('name',$name);
+
+        }
+        else{
+
+        $service=DB::table('crs_service')
+                ->select('crs_service.*','a1.firstname as callattn','a2.name as assignto','crs_client.client_name','crs_client.id as cid','crs_service_type.service_type')
+                ->join('crs_admin_users as a1','a1.id','=','crs_service.call_attend')
+                ->join('users as a2','a2.id','=','crs_service.assigned_to')
+                ->join('crs_client','crs_client.id','=','crs_service.client_name')
+                ->leftJoin('crs_service_type','crs_service_type.id','=','crs_service.service_type')
+                ->where('crs_service.status',1)
+                ->where('crs_service.service_status','open')
+                ->whereRaw('MONTH(crs_service.reported_date) = ?',[$currentMonth])
+                ->orderby('crs_service.id','DESC')
+                ->get();
+        }
+       //dd($service);
+        return view('admin.pages.servicelist')->with('service',$service)->with('user',$user)->with('name',$name)->with('assrole',$assrole);
     }
 
     public function deleteservice($id)
@@ -252,11 +282,18 @@ class HomeController extends Controller
     {
         if(Auth::user()->user_type =='admin'){
         $userrs = DB::table('users')
-                ->where('user_type','manager')->orwhere('user_type','technician')
-                ->orwhere('user_type','client')
-                ->whereStatus(1)
+                ->where('status',1)
+                ->where(function($q) {
+                    $q->where('user_type', 'technician')
+                      ->orWhere('user_type', 'manager')
+                      ->orWhere('user_type', 'client');
+                })
+                // ->where('user_type','manager')
+                // ->orwhere('user_type','technician')
+                // ->orwhere('user_type','client')
+               
                 ->get();
-        //dd($userrs);
+       // dd($userrs);
         return view('admin.pages.userlist')->with('userrs',$userrs);
         }
     }
@@ -320,7 +357,7 @@ class HomeController extends Controller
 
     public function userleadlist()
     {
-    //     if(Auth::user()->user_type =='admin'){
+        if(Auth::user()->user_type =='admin'){
          $leads = DB::table('crs_new_leads')->where('status', 1)->orderby('id', 'DESC')->get();
     //             ->where('user_type','manager')->orwhere('user_type','technician')
     //             ->orwhere('user_type','client')
@@ -329,7 +366,7 @@ class HomeController extends Controller
         //dd($userrs);
         return view('admin.pages.userleadslist')->with('leads',$leads);
         //->with('userrs',$userrs);
-       // }
+        }
     }
     public function deletelead($id)
     {
@@ -354,8 +391,25 @@ class HomeController extends Controller
     }
     public function amountlist()
     {
-        $amount = DB::table('crs_account_managment')->where('status',1)->orderby('id','DESC')->get();
-        return view('admin.pages.amountlist')->with('amount',$amount);
+        $s_vendor=DB::table('crs_system_vendor')->get();
+        $amount = DB::table('crs_account_managment')->where('status',1)->where('rec_active_status',1)->orderby('id','DESC')->get();
+        $totincome = DB::table("crs_account_managment")
+                    ->select(DB::raw("SUM(entry_amount) as income"))
+                    ->where('cash_type','credit')
+                    ->where('status',1)
+                    ->where('rec_active_status',1)
+                    ->first();
+        $totexpense = DB::table("crs_account_managment")
+                    ->select(DB::raw("SUM(entry_amount) as expense"))
+                    ->where('cash_type','debit')
+                    ->where('status',1)
+                    ->where('rec_active_status',1)
+                    ->first();
+        $balance = $totincome->income-$totexpense->expense;
+       //dd($balance);
+       
+        return view('admin.pages.amountlist')->with('amount',$amount)->with('vendor',$s_vendor)->with('totincome',$totincome)
+                    ->with('totexpense',$totexpense)->with('balance',$balance);
     }
     public function deleteamount($id)
     {
@@ -375,6 +429,54 @@ class HomeController extends Controller
         }
         else{
             return redirect('admin/amountlist');
+        }
+        }
+    }
+
+    public function viewleads($id)
+    {
+        
+
+        $leads = DB::table('crs_new_leads')
+                    //->select('crs_new_leads.*')//,'a1.firstname as callattn','a2.firstname as assignto','crs_client.client_name','crs_client.id as cid')
+                     //->join('crs_new_leads.id','=','crs_new_leads_comments.id')
+                    // ->join('crs_admin_users as a2','a2.id','=','crs_service.assigned_to')
+                    // ->join('crs_client','crs_client.id','=','crs_service.client_name')
+                    ->where('id',$id)
+                    ->first();
+            //dd($leads);
+            $lead =DB::table('crs_new_leads_comments')
+            ->select('crs_new_leads_comments.*','users.name')
+             ->join('users','users.id','=','crs_new_leads_comments.user_id')
+             ->where('crs_new_leads_comments.leads_id',$id)
+            ->get();
+            //dd($leads);
+        return view('admin.pages.viewleads')->with('leads',$leads)->with('lead',$lead);
+    }
+
+    public function serviceTypelist()
+    {
+        $service = DB::table('crs_service_type')->where('status',1)->get();
+        return view('admin.pages.servicetypelist')->with('service',$service);
+    }
+    public function deleteservicetype($id)
+    {
+        
+        if(Auth::user()->user_type =='admin'){
+        $service = array(
+           
+            'status'=>'0',
+            //'updated_at' => date("Y-m-d H:i:s")
+        );
+       // dd($service);
+        $updateservicetype = DB::table('crs_service_type')->where('id', $id)->update($service);
+
+        if($updateservicetype){
+            
+            return Redirect::back();
+        }
+        else{
+            return redirect('admin/servicetypelist');
         }
         }
     }
